@@ -1,0 +1,110 @@
+MVP_Minimal_CP-Core_ja_v0.3
+
+
+
+1. Purpose -------------------
+
+This MVP is designed to test whether a minimal economic core—
+in which actions are accepted as institutional inputs, value is generated,
+and value expires over time—can function without any central authority.
+
+This MVP does not aim to provide a UI or business-oriented features.
+It implements only an irreversible flow:
+
+Action → Record → Issuance (mint) → Expiration
+
+Components such as CRM, evaluation mechanisms, transfers, and smart contracts
+are intentionally excluded.
+Only the structure that proves viable in this MVP will serve as the foundation
+for future extensions.
+
+This MVP is a minimal implementation for verification purposes,
+intended to confirm whether the institutional structure itself
+can complete a full cycle in the real world without breaking.
+
+
+
+2. Features -------------------
+
+- Record actions as institutional inputs
+- Issue value based on recorded actions (mint)
+- Automatically expire issued value over time (expiration)
+
+
+
+3. Expiration Definition -------------------
+
+In this MVP, “expiration” does not mean physically deleting (burning) a token.
+
+Once the `expires_at` timestamp is passed, a token enters a logically expired state, and the following constraints apply:
+
+- Expired tokens cannot be used for any purpose
+- Reactivation, reissuance, or reuse is not permitted
+- Expired tokens are excluded from aggregation and system state calculations
+- However, they are permanently retained in the database as system logs
+
+Through this design, the MVP establishes an irreversible circulation boundary in which
+records remain, but value does not return.
+
+
+Note on Prestige -------------------
+
+This MVP does not handle evaluations of actions (prestige) or trust scores.
+These elements are higher-layer components that will be added after the core structure is confirmed to function correctly.
+
+
+
+4. Database Schema -------------------
+
+
+users
+| column | type                     |
+| ------ | ------------------------ |
+| id     | int (PK, auto increment) |
+| name   | varchar                  |
+
+
+contributions
+| column      | type                 | description                     |
+| ----------- | -------------------  | -------------------------       |
+| id          | int (PK)             | —                               |
+| user_id     | int (FK → users.id) | Action-linked user              |
+| title       | varchar              | Action details                  |
+| action_date | date                 | Action date                     |
+| created_at  | datetime             | Log registration timestamp      |
+
+
+tokens
+| column          | type                         | description                     |
+| --------------- | ---------------------------  | -------------------------       |
+| id              | int (PK)                     | —                               |
+| user_id         | int (FK → users.id)         | Token-linked user               |
+| contribution_id | int (FK → contributions.id) | Source action                   |
+| amount          | int                          | Token amount                    |
+| minted_at       | datetime                     | Token issuance date             |
+| expires_at      | datetime                     | Token expiration date           |
+| status          | enum: active / expired       | Token status                    |
+
+
+
+5. Screen Flow -------------------
+
+5.1 Action registration form
+    - User selection or name input
+    - Action title input
+    - Submit button (POST)
+
+5.2 Action list view
+    - user_name
+    - title
+    - action_date
+    - created_at
+      Displayed as a list (GET)
+
+5.3 System summary view (issuance observation)
+    - Total issued amount (cumulative)
+    - Currently active amount (active)
+    - Expired amount (expired)
+
+
+
